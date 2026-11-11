@@ -1,0 +1,11 @@
+/Modelos[[:space:]]Personajes/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack.zip filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Rooftop_Asset_Pack/Cyberpunk_Rooftop_Assets.blend1 filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Rooftop_Asset_Pack/Cyberpunk_Rooftop_Assets.blend@ filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Cyberpunk[[:space:]]Rooftop[[:space:]]Pack/Rooftop_Asset_Pack/Showcase.blend filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/Universal[[:space:]]Base[[:space:]]Characters\[Standard\].zip filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/kb3d_neocity.blender.native.zip filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/kb3d_neocity.blender.native/kb3d_neocity-native.blend filter=lfs diff=lfs merge=lfs -text
+/Modelos[[:space:]]Personajes/kb3d_neocity.png.2k.zip filter=lfs diff=lfs merge=lfs -text
+/src/assets/environment/rooftop/Electrical_Box_3.glb filter=lfs diff=lfs merge=lfs -text
+/src/assets/environment/rooftop/Neon_Tube_1.glb filter=lfs diff=lfs merge=lfs -text
+/src/assets/environment/rooftop/Neon_Tube_2.glb filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,25 @@
+{
+  "name": "REALITY 2059",
+  "servePort": 34872,
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
+      "CyberpunkOnline": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "CyberpunkOnlineServer": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "CyberpunkOnlineClient": {
+          "$path": "src/client"
+        }
+      }
+    }
+  }
+}

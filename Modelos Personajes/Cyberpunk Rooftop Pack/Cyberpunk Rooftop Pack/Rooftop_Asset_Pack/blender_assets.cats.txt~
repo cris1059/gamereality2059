@@ -1,0 +1,23 @@
+# This is an Asset Catalog Definition file for Blender.
+#
+# Empty lines and lines starting with `#` will be ignored.
+# The first non-ignored line should be the version indicator.
+# Other lines are of the format "UUID:catalog/path/for/assets:simple catalog name"
+
+VERSION 1
+
+248eb10a-fc9b-4077-b47b-d1066f984743:Rooftop Assets:Rooftop Assets
+75f10983-1679-47ad-8d6e-f58fda6a42a0:Rooftop Assets/ACs:Rooftop Assets-ACs
+6bb1df82-54e7-49f6-b88a-8ce523c825ea:Rooftop Assets/ADs:Rooftop Assets-ADs
+ad815592-aa44-4e56-bc55-dfd821601b74:Rooftop Assets/Antennas:Rooftop Assets-Antennas
+06ba2de4-5fbb-4424-9602-91c77a87a6fe:Rooftop Assets/CCTVs:Rooftop Assets-CCTVs
+e936ca76-64ae-4020-9335-49ed024a1a68:Rooftop Assets/Electrical Boxes:Rooftop Assets-Electrical Boxes
+9388cce5-3ee0-4c0f-8161-09621433bb1b:Rooftop Assets/Exhausts:Rooftop Assets-Exhausts
+5988a9d7-2a8f-4be8-a396-7857dc590ed8:Rooftop Assets/Fences:Rooftop Assets-Fences
+cb57f834-9c2b-4852-b557-83a163042de2:Rooftop Assets/Fences:Rooftop Assets-Fences
+32c1a50a-567f-4056-9b7e-969ac4638247:Rooftop Assets/HVACs:Rooftop Assets-HVACs
+caf3246a-b9df-41de-aeac-e8c9716073a7:Rooftop Assets/Lights:Rooftop Assets-Lights
+feed7d15-ea64-45de-ae4f-c8e2c1492ff9:Rooftop Assets/Rooftop_Sheds:Rooftop Assets-Rooftop_Sheds
+9a9f9ce1-a3f7-4566-8920-2ef2997be7c1:Rooftop Assets/Satellite Dishes:Rooftop Assets-Satellite Dishes
+2b3a91c9-a0ae-416b-92e9-facabc613f9f:Rooftop Assets/Vents:Rooftop Assets-Vents
+0cc4c52a-cfc2-4d30-9b18-859b1a716913:Rooftop Assets/Water Tanks:Rooftop Assets-Water Tanks

@@ -1,0 +1,8 @@
+﻿{
+    "family":  "Blanka",
+    "characters":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:;!?+-/%()[]\u003c\u003e_",
+    "columns":  8,
+    "rows":  8,
+    "cellSize":  192,
+    "atlasSize":  1536
+}

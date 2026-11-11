@@ -1,0 +1,28 @@
+# Rojo build artifacts
+*.rbxl
+*.rbxl.lock
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+rojo-serve*.log
+
+# Tool caches and packages
+.aftman/
+.foreman/
+Packages/
+DevPackages/
+node_modules/
+tools/rojo/*.exe
+tools/rojo/*.zip
+
+# Editors and operating systems
+.vscode/*.log
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example

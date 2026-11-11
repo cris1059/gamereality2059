@@ -1,0 +1,38 @@
+{
+  "generator": "OpenAI image generation + deterministic PBR derivation",
+  "size": [
+    1024,
+    1024
+  ],
+  "normalConvention": "OpenGL (+Y / green up)",
+  "materials": {
+    "Asphalt": {
+      "source": "city_asphalt_albedo.png",
+      "color": "Reality2059_Asphalt_Color.png",
+      "normal": "Reality2059_Asphalt_Normal.png",
+      "roughness": "Reality2059_Asphalt_Roughness.png",
+      "metalness": "Reality2059_Asphalt_Metalness.png"
+    },
+    "Concrete": {
+      "source": "city_concrete_albedo.png",
+      "color": "Reality2059_Concrete_Color.png",
+      "normal": "Reality2059_Concrete_Normal.png",
+      "roughness": "Reality2059_Concrete_Roughness.png",
+      "metalness": "Reality2059_Concrete_Metalness.png"
+    },
+    "Metal": {
+      "source": "city_metal_albedo.png",
+      "color": "Reality2059_Metal_Color.png",
+      "normal": "Reality2059_Metal_Normal.png",
+      "roughness": "Reality2059_Metal_Roughness.png",
+      "metalness": "Reality2059_Metal_Metalness.png"
+    },
+    "Facade": {
+      "source": "city_facade_albedo.png",
+      "color": "Reality2059_Facade_Color.png",
+      "normal": "Reality2059_Facade_Normal.png",
+      "roughness": "Reality2059_Facade_Roughness.png",
+      "metalness": "Reality2059_Facade_Metalness.png"
+    }
+  }
+}
