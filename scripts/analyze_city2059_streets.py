@@ -25,6 +25,7 @@ def read_glb(path):
     return gltf, data, 20 + json_len + 8
 
 
+
 def accessor(gltf, data, bin_start, index):
     acc = gltf["accessors"][index]
     view = gltf["bufferViews"][acc["bufferView"]]
