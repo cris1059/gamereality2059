@@ -18,27 +18,50 @@ local DayCycle = require(root.World.DayCycle)
 
 local CityDressingFX = {}
 
-local gradients: { [UIGradient]: number } = {}
-local screens: { [SurfaceGui]: { base: number, next: number, endsAt: number } } = {}
+-- Every change to a gradient or brightness makes Roblox redraw that whole
+-- SurfaceGui, so animating every screen in the city each frame cost frame
+-- time (and input latency) in every mode. Only screens near the camera are
+-- animated, at a fixed rate; far ones stay still (the motion is invisible
+-- at that distance anyway).
+local ANIMATE_RADIUS = 300
+local ANIMATE_INTERVAL = 1 / 20
+
+local gradients: { [UIGradient]: { phase: number, part: BasePart? } } = {}
+local screens: { [SurfaceGui]: { base: number, next: number, endsAt: number, dimmed: boolean, part: BasePart? } } = {}
 local windows: { [SurfaceGui]: boolean } = {}
 local random = Random.new()
 local connection: RBXScriptConnection? = nil
 local night: boolean? = nil
 local nextNightCheck = 0
+local nextAnimate = 0
 
 local function applyWindow(gui: SurfaceGui)
 	gui.LightInfluence = if night then 0 else 1
 	gui.Brightness = if night then 1.2 else 1
 end
 
+local function anchorPart(instance: Instance): BasePart?
+	return instance:FindFirstAncestorWhichIsA("BasePart")
+end
+
+local function near(part: BasePart?, cameraPosition: Vector3): boolean
+	return part ~= nil and (part.Position - cameraPosition).Magnitude <= ANIMATE_RADIUS
+end
+
 local function track(instance: Instance)
 	if instance:IsA("UIGradient") then
-		gradients[instance] = random:NextNumber(0, 1)
+		gradients[instance] = { phase = random:NextNumber(0, 1), part = anchorPart(instance) }
 	elseif instance:IsA("SurfaceGui") and instance:GetAttribute("Fx") == "windows" then
 		windows[instance] = true
 		applyWindow(instance)
 	elseif instance:IsA("SurfaceGui") then
-		screens[instance] = { base = instance.Brightness, next = os.clock() + random:NextNumber(2, 12), endsAt = 0 }
+		screens[instance] = {
+			base = instance.Brightness,
+			next = os.clock() + random:NextNumber(2, 12),
+			endsAt = 0,
+			dimmed = false,
+			part = anchorPart(instance),
+		}
 	end
 end
 
@@ -69,15 +92,30 @@ function CityDressingFX.Start()
 	CollectionService:GetInstanceRemovedSignal(Config.FxTag):Connect(untrack)
 	connection = RunService.Heartbeat:Connect(function()
 		local now = os.clock()
-		for gradient, phase in gradients do
-			gradient.Offset = Vector2.new(0, math.sin(now * 0.35 + phase * 6.28) * 0.35)
-		end
-		for gui, state in screens do
-			if now >= state.next then
-				state.endsAt = now + random:NextNumber(0.05, 0.25)
-				state.next = now + random:NextNumber(4, 16)
+		local camera = Workspace.CurrentCamera
+		if camera and now >= nextAnimate then
+			debug.profilebegin("R2059 DressingFX")
+			nextAnimate = now + ANIMATE_INTERVAL
+			local cameraPosition = camera.CFrame.Position
+			for gradient, state in gradients do
+				if near(state.part, cameraPosition) then
+					gradient.Offset = Vector2.new(0, math.sin(now * 0.35 + state.phase * 6.28) * 0.35)
+				end
 			end
-			gui.Brightness = if now < state.endsAt then state.base * random:NextNumber(0.2, 0.6) else state.base
+			for gui, state in screens do
+				if now >= state.next then
+					state.endsAt = now + random:NextNumber(0.05, 0.25)
+					state.next = now + random:NextNumber(4, 16)
+				end
+				local dim = now < state.endsAt and near(state.part, cameraPosition)
+				if dim then
+					gui.Brightness = state.base * random:NextNumber(0.2, 0.6)
+				elseif state.dimmed then
+					gui.Brightness = state.base
+				end
+				state.dimmed = dim
+			end
+			debug.profileend()
 		end
 		if now >= nextNightCheck then
 			nextNightCheck = now + 1

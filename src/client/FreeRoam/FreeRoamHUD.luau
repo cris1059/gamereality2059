@@ -98,6 +98,9 @@ function FreeRoamHUD.new(playerGui: PlayerGui, config)
 	BitmapText.BindTree(screen, typography)
 	return setmetatable({
 		_screen = screen,
+		_location = location,
+		_clock = clock,
+		_hints = hints,
 		_time = time,
 		_phase = phase,
 		_exit = exit,
@@ -133,6 +136,17 @@ function FreeRoamHUD:SetSprinting(sprinting: boolean)
 	if stroke then
 		stroke.Color = if sprinting then self._palette.Magenta else self._palette.Cyan
 	end
+end
+
+-- MODO ENTRENAMIENTO keeps only the MENÚ button of this HUD (ALT frees the
+-- cursor to click it): the combat HUD has the title and the key hints, and
+-- its health module takes the bottom-left corner.
+function FreeRoamHUD:SetTraining(training: boolean)
+	self._location.Visible = not training
+	self._clock.Visible = not training
+	self._hints.Visible = not training and not UserInputService.TouchEnabled
+	-- Shooter mode has its own sprint (MovementController).
+	self._sprint.Visible = UserInputService.TouchEnabled and not training
 end
 
 function FreeRoamHUD:Show()

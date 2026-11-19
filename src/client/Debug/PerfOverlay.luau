@@ -20,7 +20,7 @@ function PerfOverlay.Start(playerGui: PlayerGui, font: Enum.Font)
 	screen.Parent = playerGui
 	local readout = Instance.new("TextLabel")
 	readout.Position = UDim2.fromOffset(8, 8)
-	readout.Size = UDim2.fromOffset(250, 110)
+	readout.Size = UDim2.fromOffset(300, 130)
 	readout.BackgroundColor3 = Color3.new(0, 0, 0)
 	readout.BackgroundTransparency = 0.35
 	readout.BorderSizePixel = 0
@@ -36,22 +36,31 @@ function PerfOverlay.Start(playerGui: PlayerGui, font: Enum.Font)
 	padding.Parent = readout
 
 	local frames, elapsed, worst = 0, 0, 0
+	local samples: {number} = {}
+	local cursor = 0
 	RunService.RenderStepped:Connect(function(deltaTime)
 		if not screen.Enabled then
 			return
 		end
+		cursor = cursor % 300 + 1
+		samples[cursor] = deltaTime * 1000
 		frames += 1
 		elapsed += deltaTime
 		worst = math.max(worst, deltaTime)
 		if elapsed < 0.5 then
 			return
 		end
+		local sorted = table.clone(samples)
+		table.sort(sorted)
+		local p95 = sorted[math.max(1, math.ceil(#sorted * 0.95))] or 0
 		local life = Workspace:FindFirstChild("CityLife")
 		local ping = Players.LocalPlayer:GetNetworkPing() * 1000
 		readout.Text = string.format(
-			"FPS %d  (peor %.1f ms)\nPING %d ms\nMEMORIA %d MB\nAUTOS %d · AÉREOS %d · PERSONAS %d\nINSTANCIAS %d",
+			"FPS %d  (peor %.1f ms)\nMEDIA %.1f ms · P95 %.1f ms\nPING %d ms\nMEMORIA %d MB\nAUTOS %d · AÉREOS %d · PERSONAS %d\nINSTANCIAS %d",
 			math.round(frames / elapsed),
 			worst * 1000,
+			elapsed / frames * 1000,
+			p95,
 			math.round(ping),
 			math.round(Stats:GetTotalMemoryUsageMb()),
 			if life then life:GetAttribute("Cars") or 0 else 0,
@@ -64,6 +73,8 @@ function PerfOverlay.Start(playerGui: PlayerGui, font: Enum.Font)
 	UserInputService.InputBegan:Connect(function(input)
 		if input.KeyCode == Enum.KeyCode.F3 and not UserInputService:GetFocusedTextBox() then
 			screen.Enabled = not screen.Enabled
+			frames, elapsed, worst, cursor = 0, 0, 0, 0
+			table.clear(samples)
 		end
 	end)
 end

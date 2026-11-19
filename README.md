@@ -1,6 +1,19 @@
 # REALITY 2059
 
-Proyecto Roblox/Rojo con una base multijugador y la Fase B de ingreso de jugadores. **REALITY 2059** es el nombre oficial del videojuego. La persistencia activa es simulada: `GameConfig.Persistence.Backend` permanece en `"Mock"`. El adaptador para `DataStoreService` existe, pero no se conecta mientras esa opción no se cambie deliberadamente.
+Proyecto Roblox/Rojo de exploración y combate multijugador. **REALITY 2059** es el nombre oficial del videojuego. La persistencia actual usa `GameConfig.Persistence.Backend = "Auto"`: DataStore real cuando responde; Mock únicamente en Studio sin acceso. Este cambio está autorizado en `CONTEXTO.md`. Las fases que siguen son un historial y pueden describir implementaciones sustituidas.
+
+## Estado actual — 15/11/2026
+
+- Personajes R15 estándar; el rig Quaternius descrito en fases antiguas ya no es el avatar activo.
+- Modo libre disponible: **JUGAR → MODO LIBRE → JUGAR**. Permite explorar la ciudad y volver por MENÚ; el líder selecciona el modo de su escuadrón.
+- Partidas privadas locales en DistritoNexus. La cola pública entre servidores sigue requiriendo configuración y validación propias.
+- Disparos: validación finita, arrays exactos de perdigones, límite de solicitudes y cadencia sin aceleración acumulada. Suite `CombatValidationTests`: 22 casos, incluidos efectos sobre munición y cooldown del manejador real.
+- `ServerReady` se activa tras arrancar los servicios. Rojo usa el puerto 34872.
+- HUD de combate: vida, munición y estado de eliminación; audio provisional incluido con Roblox. F3 muestra FPS, tiempo medio, P95, memoria e instancias.
+- Studio muestra la interfaz inicial con `DevConfig.QuickStart = false`. El modo libre está disponible desde JUGAR en el lobby.
+- Poses compatibles con Motor6D y AnimationConstraint. El inicio de partida desde la ciudad libera el controlador anterior antes de activar el mapa.
+- Evidencias y límites de las pruebas: [VALIDACION.md](VALIDACION.md).
+- No se ha publicado el juego como parte de esta revisión.
 
 ## Compatibilidad del cambio de identidad
 

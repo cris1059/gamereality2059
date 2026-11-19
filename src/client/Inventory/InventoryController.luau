@@ -73,7 +73,7 @@ function InventoryController.new(playerGui: PlayerGui, config)
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "Reality2059Inventory"
 	screen.ResetOnSpawn = false
-	screen.IgnoreGuiInset = true
+	screen.IgnoreGuiInset = false
 	screen.DisplayOrder = 60
 	screen.Enabled = false
 	screen.Parent = playerGui
@@ -83,7 +83,8 @@ function InventoryController.new(playerGui: PlayerGui, config)
 	local opener = Instance.new("TextButton")
 	opener.Name = "Open"
 	opener.AnchorPoint = Vector2.new(1, 0)
-	opener.Position = UDim2.new(1, -16, 0, 64)
+	-- Share the HUD inset and leave 12px below its MENU button (y=16, h=40).
+	opener.Position = UDim2.new(1, -16, 0, 68)
 	opener.Size = UDim2.fromOffset(140, 40)
 	opener.BackgroundColor3 = CARD
 	opener.BorderSizePixel = 0

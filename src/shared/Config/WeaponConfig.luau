@@ -9,7 +9,8 @@ local WeaponConfig = {
 	-- Weapon Tools, built once in Studio by Weapons/WeaponImporter.
 	StorageFolder = "Weapons",
 	Pickup = table.freeze({
-		Key = Enum.KeyCode.E,
+		-- F (E leans right, see LeanConfig).
+		Key = Enum.KeyCode.F,
 		GamepadKey = Enum.KeyCode.ButtonX,
 		MaxDistance = 8,
 		-- Armory pickups come back after this long (map tests).

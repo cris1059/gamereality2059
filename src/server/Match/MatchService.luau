@@ -139,6 +139,17 @@ function MatchService:_placeMap(template: Model, slot: number): Model?
 	return copy
 end
 
+-- A copy of map `name` placed in its own slot, or nil if the map does not
+-- exist. TrainingService uses this with a slot of its own (MatchConfig.Training).
+function MatchService:PlaceMap(name: string, slot: number): Model?
+	local template = mapTemplate(name)
+	if not template then
+		warn("[REALITY 2059] No existe el mapa " .. name .. " (constrúyelo en Studio y guarda el place)")
+		return nil
+	end
+	return self:_placeMap(template, slot)
+end
+
 local function spawnPoints(model: Model, teamId: TeamId): { BasePart }
 	local spawns = model:FindFirstChild("Spawns")
 	local folder = spawns and spawns:FindFirstChild("Team" .. teamId)

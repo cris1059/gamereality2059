@@ -657,9 +657,13 @@ end)
 
 -- Destinations. Each one comes back to the hub when it ends or fails.
 -- options.shooter: the third-person shooter setup (map tests, later matches).
-local function enterFreeRoam(character, options: { shooter: boolean?, map: string? }?)
+-- options.training: MODO ENTRENAMIENTO (its HUD with MENÚ to leave).
+local function enterFreeRoam(character, options: { shooter: boolean?, map: string?, training: boolean? }?)
 	if freeRoam:IsActive() then
-		return
+		if not (options and options.shooter) then return end
+		-- A private match can launch while a squad member explores the city.
+		-- Release the old camera/HUD/character before activating the match map.
+		freeRoam:Deactivate()
 	end
 	lobby:Deactivate()
 	morphLab:Deactivate()
@@ -695,9 +699,49 @@ lobby:SetPlayHandler(function(mode: string)
 	party:Play(mode)
 end)
 lobby:SetOperatorHandler(enterMorphLab)
+-- MODO ENTRENAMIENTO: the server readies the shared practice map (weapons on
+-- pedestals, dummies) and this player's spawn and weapons, then shooter mode
+-- on it. MENÚ brings them back (TrainingLeave).
+local training = false
+local function leaveTraining()
+	if not training then
+		return
+	end
+	training = false
+	local leave = remotes:FindFirstChild(RemoteNames.TrainingLeave)
+	if leave and leave:IsA("RemoteEvent") then
+		leave:FireServer()
+	end
+end
+local function enterTraining(character)
+	local start = remotes:WaitForChild(RemoteNames.TrainingStart, 10) :: RemoteFunction?
+	if not start then
+		party:Toast("MODO ENTRENAMIENTO NO DISPONIBLE", Color3.fromRGB(255, 80, 105))
+		return
+	end
+	local ok, result = pcall(function()
+		return start:InvokeServer()
+	end)
+	if not ok or type(result) ~= "table" or not result.ok then
+		local reason = if ok and type(result) == "table" then tostring(result.errorCode) else tostring(result)
+		warn("[REALITY 2059] Entrenamiento: " .. reason)
+		party:Toast("NO SE PUDO ABRIR EL ENTRENAMIENTO // " .. reason, Color3.fromRGB(255, 80, 105))
+		return
+	end
+	training = true
+	enterFreeRoam(character, { shooter = true, map = result.map, training = true })
+	if not freeRoam:IsActive() then
+		leaveTraining()
+	end
+end
 party:SetLaunchHandler(function(mode)
-	if mode == "free" and currentCharacter then
+	if not currentCharacter then
+		return
+	end
+	if mode == "free" then
 		enterFreeRoam(currentCharacter)
+	elseif mode == "training" then
+		enterTraining(currentCharacter)
 	end
 end)
 party:SetChangedHandler(function(snapshot)
@@ -711,6 +755,8 @@ local matchController = MatchController.new(playerGui, function(mapKey: string)
 		warn("[REALITY 2059] Partida: no hay personaje guardado")
 		return
 	end
+	-- A private match can start while training: the practice spot is freed.
+	leaveTraining()
 	enterFreeRoam(currentCharacter, { shooter = true, map = mapKey })
 end, function()
 	if freeRoam:IsActive() then
@@ -721,6 +767,7 @@ end)
 -- MENÚ in the free-roam HUD returns to the hub.
 freeRoam:SetExitHandler(function()
 	freeRoam:Deactivate()
+	leaveTraining()
 	showHub()
 end)
 UserInputService.InputBegan:Connect(function(input, processed)

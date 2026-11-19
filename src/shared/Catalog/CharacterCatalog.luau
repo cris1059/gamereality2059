@@ -197,11 +197,11 @@ return table.freeze({
 	Classes = table.freeze({ "runner", "netrunner", "enforcer", "ghost", "medtech" }),
 	ClassStatKeys = table.freeze({ "speed", "armor", "hacking", "stealth", "support" }),
 	ClassInfo = table.freeze({
-		runner = table.freeze({ color = Color3.fromRGB(0, 229, 255), stats = table.freeze({ speed = 5, armor = 2, hacking = 1, stealth = 3, support = 2 }) }),
-		netrunner = table.freeze({ color = Color3.fromRGB(60, 255, 140), stats = table.freeze({ speed = 3, armor = 1, hacking = 5, stealth = 3, support = 2 }) }),
-		enforcer = table.freeze({ color = Color3.fromRGB(255, 96, 40), stats = table.freeze({ speed = 2, armor = 5, hacking = 1, stealth = 1, support = 3 }) }),
-		ghost = table.freeze({ color = Color3.fromRGB(150, 110, 255), stats = table.freeze({ speed = 4, armor = 1, hacking = 2, stealth = 5, support = 1 }) }),
-		medtech = table.freeze({ color = Color3.fromRGB(255, 210, 90), stats = table.freeze({ speed = 3, armor = 2, hacking = 2, stealth = 1, support = 5 }) }),
+		runner = table.freeze({ name = "CORREDOR", color = Color3.fromRGB(0, 229, 255), stats = table.freeze({ speed = 5, armor = 2, hacking = 1, stealth = 3, support = 2 }) }),
+		netrunner = table.freeze({ name = "NETRUNNER", color = Color3.fromRGB(60, 255, 140), stats = table.freeze({ speed = 3, armor = 1, hacking = 5, stealth = 3, support = 2 }) }),
+		enforcer = table.freeze({ name = "EJECUTOR", color = Color3.fromRGB(255, 96, 40), stats = table.freeze({ speed = 2, armor = 5, hacking = 1, stealth = 1, support = 3 }) }),
+		ghost = table.freeze({ name = "FANTASMA", color = Color3.fromRGB(150, 110, 255), stats = table.freeze({ speed = 4, armor = 1, hacking = 2, stealth = 5, support = 1 }) }),
+		medtech = table.freeze({ name = "MEDTECH", color = Color3.fromRGB(255, 210, 90), stats = table.freeze({ speed = 3, armor = 2, hacking = 2, stealth = 1, support = 5 }) }),
 	}),
 	-- Cyberware built by the game (Character/R15Cyberware), welded to the
 	-- body. "none" is the persisted placeholder for an empty loadout.

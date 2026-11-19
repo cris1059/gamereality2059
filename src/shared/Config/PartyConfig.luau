@@ -38,8 +38,8 @@ local PartyConfig = {
 	-- Modes a party can start. "free" keeps everyone on this server in
 	-- MODO LIBRE; the others go through matchmaking.
 	Modes = table.freeze({
-		-- Locked: competitive comes first (LobbyConfig shows it as BLOQUEADO).
-		free = table.freeze({ name = "MODO LIBRE", matchmaking = false, locked = true, maxMembers = 5 }),
+		-- City exploration is available from the lobby, solo or with a squad.
+		free = table.freeze({ name = "MODO LIBRE", matchmaking = false, locked = false, maxMembers = 5 }),
 		-- Quick match: team deathmatch only.
 		quick = table.freeze({ name = "PARTIDA RÁPIDA", matchmaking = true, gameMode = "team_deathmatch", maxMembers = 5 }),
 		-- Locked until ranked play opens.
@@ -47,7 +47,8 @@ local PartyConfig = {
 		-- A private room is one complete 10-player match. It never gets combined
 		-- with another party in matchmaking.
 		private = table.freeze({ name = "PARTIDA PRIVADA", matchmaking = true, privateServer = true, gameMode = "team_deathmatch", maxMembers = 10 }),
-		training = table.freeze({ name = "MODO ENTRENAMIENTO", matchmaking = false, locked = true, maxMembers = 5 }),
+		-- Practice map on this server (TrainingService), solo or with the squad.
+		training = table.freeze({ name = "MODO ENTRENAMIENTO", matchmaking = false, locked = false, maxMembers = 5 }),
 	}),
 
 	Matchmaking = table.freeze({

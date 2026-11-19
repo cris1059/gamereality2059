@@ -15,6 +15,7 @@ local Workspace = game:GetService("Workspace")
 local root = ReplicatedStorage:WaitForChild("CyberpunkOnline")
 local RemoteNames = require(root.Network.RemoteNames)
 local MatchConfig = require(root.Config.MatchConfig)
+local CombatHUD = require(script.Parent.Parent.HUD.CombatHUD)
 
 local MatchController = {}
 MatchController.__index = MatchController
@@ -24,7 +25,6 @@ local LEAVE_HOLD = 1.5
 local TEXT = Color3.fromRGB(236, 240, 255)
 local MUTED = Color3.fromRGB(150, 158, 182)
 local PANEL = Color3.fromRGB(8, 10, 20)
-local FEED_SECONDS = 5
 
 local function label(parent: Instance, name: string, text: string, size: UDim2, position: UDim2, font: Enum.Font, textSize: number, color: Color3): TextLabel
 	local item = Instance.new("TextLabel")
@@ -135,8 +135,14 @@ function MatchController.new(playerGui: PlayerGui, onEnter: (string) -> (), onEx
 	backRound.CornerRadius = UDim.new(0, 6)
 	backRound.Parent = back
 
+	-- Score strip and elimination feed are drawn by the HUD (MatchBar /
+	-- KillFeed); this screen keeps the countdown, the leave hint and results.
+	bar.Visible = false
+	yourTeam.Visible = false
+	feed.Visible = false
 	local self = setmetatable({
 		_screen = screen,
+		_hud = CombatHUD.get(),
 		_scoreA = scoreA,
 		_scoreB = scoreB,
 		_clock = clock,
@@ -152,7 +158,6 @@ function MatchController.new(playerGui: PlayerGui, onEnter: (string) -> (), onEx
 		_onExit = onExit,
 		_state = nil :: any,
 		_inMatch = false,
-		_feedOrder = 0,
 		_leaveRemote = nil :: RemoteEvent?,
 		_leaveStarted = nil :: number?,
 	}, MatchController)
@@ -178,35 +183,6 @@ end
 
 function MatchController:IsInMatch(): boolean
 	return self._inMatch
-end
-
-function MatchController:_feedLine(event)
-	local line = Instance.new("TextLabel")
-	self._feedOrder += 1
-	line.LayoutOrder = -self._feedOrder
-	line.Size = UDim2.fromOffset(340, 22)
-	line.BackgroundColor3 = PANEL
-	line.BackgroundTransparency = 0.35
-	line.Font = Enum.Font.GothamBold
-	line.TextSize = 14
-	line.TextColor3 = TEXT
-	line.RichText = true
-	line.TextXAlignment = Enum.TextXAlignment.Right
-	local function colored(name: string, teamId: string?): string
-		local color = teamColor(teamId)
-		return string.format('<font color="rgb(%d,%d,%d)">%s</font>', math.floor(color.R * 255 + 0.5), math.floor(color.G * 255 + 0.5), math.floor(color.B * 255 + 0.5), name)
-	end
-	if event.kind == "left" then
-		line.Text = event.victim .. " salió de la partida  "
-	elseif event.killer then
-		line.Text = string.format("%s  eliminó a  %s  ", colored(event.killer, event.killerTeam), colored(event.victim, event.victimTeam))
-	else
-		line.Text = colored(event.victim, event.victimTeam) .. "  cayó  "
-	end
-	line.Parent = self._feed
-	task.delay(FEED_SECONDS, function()
-		line:Destroy()
-	end)
 end
 
 function MatchController:_showResults(view)
@@ -248,6 +224,7 @@ function MatchController:_onState(view)
 	end
 	if view.phase == "closed" then
 		self._state = nil
+		self._hud:SetMatch(nil)
 		self:_unbindLeave()
 		if self._inMatch then
 			self._inMatch = false
@@ -272,9 +249,7 @@ function MatchController:_onState(view)
 	self._subtitle.Text = string.format("%s  ·  PRIMERO A %d", view.mapName or "", view.scoreLimit or 0)
 	self._yourTeam.Text = if view.team then "TU EQUIPO: " .. teamName(view.team) else ""
 	self._yourTeam.TextColor3 = teamColor(view.team)
-	if view.event then
-		self:_feedLine(view.event)
-	end
+	self._hud:SetMatch(view, { A = teamName("A"), B = teamName("B") })
 	if view.phase == "ended" then
 		self:_unbindLeave()
 		if self._inMatch then

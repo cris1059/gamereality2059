@@ -13,6 +13,10 @@ local DevConfig = {
 	--               starting on its team A spawns
 	-- QuickStart = "MapTest",
 	QuickStart = false,
+	-- Studio only: the combat HUD loops through its states (damage, healing,
+	-- CRÍTICO, GLOAT, eliminated, ammo, sample abilities and ultimate) on top
+	-- of the real one, visual only, to judge them without a real fight.
+	HUDTest = false,
 	-- Map for "MapTest": a model in Workspace.MapWorkshop (see src/server/Maps).
 	MapTest = "DistritoNexus",
 
@@ -20,6 +24,10 @@ local DevConfig = {
 	-- like a full squad, all LISTO) to judge the line-up's lighting and poses
 	-- without friends online. They are scenery: not in the squad list.
 	PreviewSquad = true,
+
+	-- Studio only: tops up your inventory with every item in
+	-- InventoryConfig.Items (missing ones only) when it first loads.
+	GrantAllItems = true,
 
 	-- Test character for "Lobby" / "FreeRoam" (MockDataStore keeps nothing
 	-- between Play sessions). Any field may be removed to keep the default;

@@ -57,6 +57,14 @@ function InventoryTests.run(): { passed: number, total: number }
 	expect(inventory.items.test_food == 3, "quantities changed")
 	passed += 1
 
+	-- Dev grant adds only missing items and never lowers a quantity.
+	local held = { items = { test_food = 9 }, equipped = {} }
+	expect(InventoryService.GrantMissing(held, CATALOG), "grant added nothing")
+	expect(held.items.test_blade == 1 and held.items.test_rifle == 1, "grant missed an item")
+	expect(held.items.test_food == 9, "grant changed a held quantity")
+	expect(not InventoryService.GrantMissing(held, CATALOG), "second grant changed something")
+	passed += 1
+
 	-- Schema 1 -> 2 keeps the character and adds empty items / equipped.
 	local legacy = PlayerSchema.createDefault(10)
 	legacy.schemaVersion = 1
@@ -64,7 +72,7 @@ function InventoryTests.run(): { passed: number, total: number }
 	legacy.data.inventory.equipped = nil
 	legacy.data.inventory.currency = 25
 	local migratedOk, migrated = PlayerMigrations.migrate(DeepCopy(legacy))
-	expect(migratedOk and migrated.schemaVersion == 2, "schema 1 did not migrate to 2")
+	expect(migratedOk and migrated.schemaVersion == require(game.ReplicatedStorage.CyberpunkOnline.Config.GameConfig).DataSchemaVersion, "schema 1 did not migrate to the current version")
 	expect(next(migrated.data.inventory.items) == nil, "migrated items are not empty")
 	expect(migrated.data.inventory.currency == 25, "migration lost the currency")
 	expect(PlayerSchema.validateRecord(migrated), "migrated record is invalid")
@@ -86,7 +94,7 @@ function InventoryTests.run(): { passed: number, total: number }
 	expect(not service:SaveInventory(9, { test_blade = 1.5 }, {}), "fractional quantity accepted")
 	passed += 1
 
-	return { passed = passed, total = 5 }
+	return { passed = passed, total = 6 }
 end
 
 return InventoryTests

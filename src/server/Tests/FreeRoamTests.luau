@@ -10,6 +10,7 @@ local FreeRoamConfig = require(root.Config.FreeRoamConfig)
 local DayCycle = require(root.World.DayCycle)
 local CityData = require(script.Parent.Parent.World.City2059Data)
 local CityMaterialConfig = require(script.Parent.Parent.World.CityMaterialConfig)
+local CityTextureConfig = require(script.Parent.Parent.World.CityTextureConfig)
 local FreeRoamService = require(script.Parent.Parent.Services.FreeRoamService)
 
 local FreeRoamTests = {}
@@ -120,7 +121,15 @@ function FreeRoamTests.run(): { passed: number, total: number }
 					expect(role ~= nil, "city part has an unknown material role")
 					local variant = MaterialService:FindFirstChild(role.variantName, true)
 					local materialSource = descendant:GetAttribute("CityMaterialSource")
-					if materialSource == "SURFACE_APPEARANCE" then
+					if materialSource == "PLAIN_STYLE" then
+						local expected = nil
+						for setName, style in CityTextureConfig.PlainSets do
+							local set = CityTextureConfig.Sets[setName]
+							if set and table.find(set.pieces, descendant.Name) then expected = style.material end
+						end
+						expect(expected ~= nil and descendant.Material == expected, "plain city style was not assigned")
+						expect(descendant.MaterialVariant == "", "plain style kept a variant")
+					elseif materialSource == "SURFACE_APPEARANCE" then
 						expect(descendant:FindFirstChildOfClass("SurfaceAppearance") ~= nil, "SurfaceAppearance source is missing")
 					elseif materialSource == "PBR" then
 						expect(isReadyMaterialVariant(variant, roleName, role), "PBR source does not have a ready MaterialVariant")

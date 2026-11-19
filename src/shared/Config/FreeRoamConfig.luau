@@ -41,12 +41,9 @@ local FreeRoamConfig = {
 		ThirdPersonDistance = 7,
 		FirstPersonDistance = 0.5,
 		ToggleKeys = table.freeze({ Enum.KeyCode.V, Enum.KeyCode.DPadUp }),
-		-- Over-the-shoulder: X studs to the side, Y up (side starts on the left
-		-- so the character sits on the right of the screen; Q swaps).
+		-- Over the right shoulder: X studs to the right, Y up (the character
+		-- sits on the left of the screen). Q / E lean in shooter mode (LeanConfig).
 		ShoulderOffset = Vector2.new(2.2, 0.6),
-		ShoulderKeys = table.freeze({ Enum.KeyCode.Q, Enum.KeyCode.DPadRight }),
-		-- Higher = faster shoulder swap.
-		ShoulderSwapSpeed = 10,
 		-- Roblox defaults, restored when leaving MODO LIBRE.
 		DefaultMinZoom = 0.5,
 		DefaultMaxZoom = 400,

@@ -122,8 +122,13 @@ function CityLife:Start(density: number?)
 	self._people = people
 	local statsTimer = 0
 	self._connection = RunService.Heartbeat:Connect(function(deltaTime)
+		-- Labels for the MicroProfiler (Ctrl+F6).
+		debug.profilebegin("R2059 Traffic")
 		traffic:Update(deltaTime)
+		debug.profileend()
+		debug.profilebegin("R2059 PeopleUpdate")
 		people:Update(deltaTime)
+		debug.profileend()
 		-- Live counts for the F3 panel.
 		statsTimer += deltaTime
 		if statsTimer >= 1 then

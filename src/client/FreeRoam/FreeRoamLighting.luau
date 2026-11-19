@@ -145,8 +145,17 @@ function FreeRoamLighting:Start()
 	end
 	self._night = nil
 	self:_update()
-	self._connection = RunService.Heartbeat:Connect(function()
-		self:_update()
+	-- The cycle lasts minutes, so 4 updates a second look continuous; writing
+	-- every lighting and atmosphere property each frame made the engine
+	-- recompute lighting every frame for no visible change.
+	local UPDATE_INTERVAL = 0.25
+	local elapsed = 0
+	self._connection = RunService.Heartbeat:Connect(function(deltaTime: number)
+		elapsed += deltaTime
+		if elapsed >= UPDATE_INTERVAL then
+			elapsed = 0
+			self:_update()
+		end
 	end)
 end
 

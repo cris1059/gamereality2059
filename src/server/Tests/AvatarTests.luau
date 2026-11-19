@@ -120,8 +120,8 @@ function AvatarTests.run(): { passed: number, total: number }
 	-- still settles back; every stance stays finite.
 	local pose = R15Pose.new(model)
 	expect(pose ~= nil, "R15Pose could not find the rig's joints")
-	local hip = (model:FindFirstChild("LeftUpperLeg") :: Instance):FindFirstChild("LeftHip") :: Motor6D
-	local knee = (model:FindFirstChild("LeftLowerLeg") :: Instance):FindFirstChild("LeftKnee") :: Motor6D
+	local hip = (model:FindFirstChild("LeftUpperLeg") :: Instance):FindFirstChild("LeftHip") :: (Motor6D | AnimationConstraint)
+	local knee = (model:FindFirstChild("LeftLowerLeg") :: Instance):FindFirstChild("LeftKnee") :: (Motor6D | AnimationConstraint)
 	local forward, backward, kneeMax = 0, 0, 0
 	;(pose :: any):SetLocomotion(14)
 	for step = 1, 120 do
@@ -145,7 +145,7 @@ function AvatarTests.run(): { passed: number, total: number }
 		for _ = 1, 30 do
 			(pose :: any):Step(1 / 30)
 		end
-		for _, value in { ((model:FindFirstChild("RightUpperArm") :: Instance):FindFirstChild("RightShoulder") :: Motor6D).Transform:GetComponents() } do
+		for _, value in { ((model:FindFirstChild("RightUpperArm") :: Instance):FindFirstChild("RightShoulder") :: (Motor6D | AnimationConstraint)).Transform:GetComponents() } do
 			expect(value == value and math.abs(value) < math.huge, "stance " .. name .. " produced an invalid transform")
 		end
 	end

@@ -69,7 +69,9 @@ function PartyTests.run(): { passed: number, total: number }
 	expect(PartyCore.canStart(state, 1), "could not start with everyone ready")
 	expect(not PartyCore.canStart(state, 2), "non-leader started")
 	-- Locked modes are refused; PARTIDA RÁPIDA remains the default.
-	expect(not PartyCore.setMode(state, 1, "free"), "the locked MODO LIBRE was accepted")
+	expect(PartyCore.setMode(state, 1, "free"), "MODO LIBRE should be available")
+	expect(party.mode == "free", "free roam selection was not retained")
+	expect(PartyCore.setMode(state, 1, "quick"), "could not return to quick mode")
 	expect(not PartyCore.setMode(state, 1, "ranked"), "the locked COMPETITIVO was accepted")
 	expect(party.mode == "quick", "new squads must play PARTIDA RÁPIDA")
 	passed += 1

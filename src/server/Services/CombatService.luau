@@ -7,7 +7,8 @@
 --     with ammo, not reloading, and the shot starts at their head;
 --   * every pellet is traced against the world (walls stop it) and against
 --     the targets' body parts as they were when the shot was fired (a short
---     position history per target: light lag compensation);
+--     position history per target: light lag compensation), with the upper
+--     body rolled when the target leans (Lean attribute, Combat/LeanPose);
 --   * damage = weapon damage x body zone (head / torso / arm / leg), applied
 --     with Humanoid:TakeDamage; teammates are never hurt.
 -- The shooter gets each hit back (WeaponHit: damage numbers, hit marker);
@@ -25,6 +26,9 @@ local root = ReplicatedStorage:WaitForChild("CyberpunkOnline")
 local RemoteNames = require(root.Network.RemoteNames)
 local DevConfig = require(root.Config.DevConfig)
 local WeaponStats = require(root.Combat.WeaponStats)
+local LeanPose = require(root.Combat.LeanPose)
+local ShotValidator = require(script.Parent.ShotValidator)
+local RateLimiter = require(script.Parent.RateLimiter)
 
 local CombatService = {}
 CombatService.__index = CombatService
@@ -33,7 +37,6 @@ local TARGET_TAG = "Damageable"
 local HISTORY_SECONDS = 1
 local MAX_REWIND = 0.4
 local ORIGIN_TOLERANCE = 7
-local RATE_TOLERANCE = 0.8
 local DUMMY_RESPAWN = 3
 
 type Sample = { time: number, position: Vector3 }
@@ -57,7 +60,8 @@ function CombatService.new(runtime: Folder)
 		_hit = remote(remotes, "RemoteEvent", RemoteNames.WeaponHit) :: RemoteEvent,
 		_shots = remote(remotes, "UnreliableRemoteEvent", RemoteNames.WeaponShots) :: UnreliableRemoteEvent,
 		_history = {} :: { [Model]: { Sample } },
-		_lastShot = {} :: { [Player]: number },
+		_nextShot = {} :: { [Player]: number },
+		_requestLimiter = RateLimiter.new(60, 1),
 	}, CombatService)
 end
 
@@ -191,11 +195,23 @@ function CombatService:_trace(shooter: Player, origin: Vector3, direction: Vecto
 	for _, target in targets() do
 		if target ~= shooter.Character and humanoidOf(target) and not sameTeam(shooter, target) then
 			local offset = self:_rewind(target, shotTime)
+			-- A leaning target's upper body is rolled at the waist (as every
+			-- client draws it), so its hitboxes are too.
+			local lean = target:GetAttribute("Lean")
+			local lowerTorso = target:FindFirstChild("LowerTorso")
+			local leanTransform: CFrame? = nil
+			if type(lean) == "number" and math.abs(lean) > 0.01 and lowerTorso and lowerTorso:IsA("BasePart") then
+				leanTransform = LeanPose.upperBodyTransform(lowerTorso.CFrame, lowerTorso.Size, lean)
+			end
 			for _, part in target:GetChildren() do
 				if part:IsA("BasePart") then
 					local zone = WeaponStats.ZoneOf(part.Name)
 					if zone and part.Name ~= "HumanoidRootPart" then
-						local distance = rayBox(origin, direction, part.CFrame + offset, part.Size)
+						local frame = part.CFrame
+						if leanTransform and LeanPose.UpperParts[part.Name] then
+							frame = leanTransform * frame
+						end
+						local distance = rayBox(origin, direction, frame + offset, part.Size)
 						if distance and distance < bestDistance then
 							bestTarget, bestZone, bestDistance = target, zone, distance
 						end
@@ -207,7 +223,19 @@ function CombatService:_trace(shooter: Player, origin: Vector3, direction: Vecto
 	return bestTarget, bestZone, if bestTarget then bestDistance else nil
 end
 
+-- True while `tool` is still being taken out: its draw time (WeaponStats,
+-- minus a little latency slack) has not passed since WeaponService stamped
+-- EquippedAt. Weapons without the stamp are never held back.
+local function stillDrawing(tool: Tool, now: number): boolean
+	local equippedAt = tool:GetAttribute("EquippedAt")
+	if type(equippedAt) ~= "number" then
+		return false
+	end
+	return now < equippedAt + WeaponStats.DrawSeconds(tool) - WeaponStats.DrawTolerance
+end
+
 function CombatService:_onFire(player: Player, origin: any, directions: any, shotTime: any)
+	if not self._requestLimiter:Allow(player.UserId) then return end
 	local character = player.Character
 	local humanoid = character and humanoidOf(character)
 	local head = character and character:FindFirstChild("Head")
@@ -221,21 +249,20 @@ function CombatService:_onFire(player: Player, origin: any, directions: any, sho
 	if not tool then
 		return
 	end
-	prepareTool(tool)
 	local stats = WeaponStats.Get(tool)
+	if not ShotValidator.Validate(origin, directions, shotTime, head.Position, stats.pellets, ORIGIN_TOLERANCE) then return end
 	local now = Workspace:GetServerTimeNow()
-	local last = self._lastShot[player]
-	if last and now - last < (1 / stats.fireRate) * RATE_TOLERANCE then
+	if stillDrawing(tool, now) then return end
+	local nextShot = ShotValidator.NextShot(now, self._nextShot[player], stats.fireRate)
+	if not nextShot then
 		return
 	end
+	prepareTool(tool)
 	local ammo = tool:GetAttribute("Ammo")
 	if type(ammo) ~= "number" or ammo <= 0 or tool:GetAttribute("Reloading") then
 		return
 	end
-	if (origin - head.Position).Magnitude > ORIGIN_TOLERANCE or #directions ~= stats.pellets then
-		return
-	end
-	self._lastShot[player] = now
+	self._nextShot[player] = nextShot
 	tool:SetAttribute("Ammo", ammo - 1)
 	local time = math.clamp(shotTime, now - MAX_REWIND, now)
 	local worldParams = RaycastParams.new()
@@ -245,10 +272,8 @@ function CombatService:_onFire(player: Player, origin: any, directions: any, sho
 	local hits = {}
 	local endpoints = {}
 	local damageByTarget: { [Model]: number } = {}
-	for _, direction in directions do
-		if typeof(direction) ~= "Vector3" or direction.Magnitude < 0.5 then
-			continue
-		end
+	for index = 1, stats.pellets do
+		local direction = directions[index]
 		local unit = direction.Unit
 		local wall = Workspace:Raycast(origin, unit * stats.range, worldParams)
 		local limit = if wall then wall.Distance else stats.range
@@ -288,9 +313,10 @@ function CombatService:_onFire(player: Player, origin: any, directions: any, sho
 end
 
 function CombatService:_onReload(player: Player)
+	if not self._requestLimiter:Allow(player.UserId) then return end
 	local character = player.Character
 	local tool = character and heldWeapon(character)
-	if not tool or tool:GetAttribute("Reloading") then
+	if not tool or tool:GetAttribute("Reloading") or stillDrawing(tool, Workspace:GetServerTimeNow()) then
 		return
 	end
 	prepareTool(tool)
@@ -385,7 +411,8 @@ function CombatService:Start()
 		self:_record()
 	end)
 	Players.PlayerRemoving:Connect(function(player)
-		self._lastShot[player] = nil
+		self._nextShot[player] = nil
+		self._requestLimiter:Remove(player.UserId)
 	end)
 	if RunService:IsStudio() and DevConfig.QuickStart == "MapTest" then
 		local workshop = Workspace:FindFirstChild("MapWorkshop")

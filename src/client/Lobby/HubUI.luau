@@ -324,7 +324,7 @@ function HubUI.new(playerGui: PlayerGui, config, lobbyConfig)
 	free.Size = UDim2.new(1, 0, 0, 104)
 	free.Position = UDim2.fromOffset(0, 62)
 	free.BackgroundColor3 = Color3.new(1, 1, 1)
-	free.BackgroundTransparency = 0.55
+	free.BackgroundTransparency = 0.05
 	free.AutoButtonColor = false
 	free.Text = ""
 	free.ClipsDescendants = true
@@ -342,10 +342,10 @@ function HubUI.new(playerGui: PlayerGui, config, lobbyConfig)
 	freeDescription.TextYAlignment = Enum.TextYAlignment.Top
 	local freeTag = frame(free, "Tag", UDim2.fromOffset(90, 20), UDim2.new(1, -100, 0, 13), MUTED, 0.8)
 	corner(freeTag, 4)
-	local freeTagText = label(freeTag, "Text", "BLOQUEADO", UDim2.fromScale(1, 1), UDim2.new(), fonts.Technical, 10, MUTED)
+	local freeTagText = label(freeTag, "Text", "DISPONIBLE", UDim2.fromScale(1, 1), UDim2.new(), fonts.Technical, 10, GOOD)
 	freeTagText.TextXAlignment = Enum.TextXAlignment.Center
 	free.Activated:Connect(function()
-		self:Toast("MODO LIBRE ESTÁ BLOQUEADO // PRÓXIMAMENTE", WARN)
+		if self._callbacks.mode then self._callbacks.mode("free") end
 	end)
 
 	local multiplayer = Instance.new("TextButton")
@@ -399,6 +399,7 @@ function HubUI.new(playerGui: PlayerGui, config, lobbyConfig)
 	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	listLayout.Parent = list
 	for index, mode in lobbyConfig.Modes do
+		if mode.id == "free" then continue end -- its card lives on the landing page
 		local card = Instance.new("TextButton")
 		card.Name = mode.id
 		card.LayoutOrder = index
@@ -747,7 +748,7 @@ function HubUI.new(playerGui: PlayerGui, config, lobbyConfig)
 	local controls = frame(settings, "Controls", UDim2.new(1, 0, 0, 208), UDim2.fromOffset(0, 164), CARD, 0.15)
 	corner(controls, 6)
 	local controlsText = label(controls, "Text",
-		"CONTROLES\n\nWASD · Moverse          Shift · Correr\nEspacio · Saltar          Mouse · Cámara\nV · Primera / tercera persona\nQ · Cambiar de hombro\nI · Inventario          F3 · Rendimiento\n\nEn el menú: Q / E cambian de pestaña",
+		"CONTROLES\n\nWASD · Moverse          Shift · Correr\nEspacio · Saltar          Mouse · Cámara\nV · Primera / tercera persona\nQ / E · Asomarse izq. / der.     F · Recoger arma\nI · Inventario          F3 · Rendimiento\n\nEn el menú: Q / E cambian de pestaña",
 		UDim2.new(1, -28, 1, -20), UDim2.fromOffset(14, 10), fonts.Interface, 13, palette.Text)
 	controlsText.TextYAlignment = Enum.TextYAlignment.Top
 
@@ -889,7 +890,7 @@ function HubUI:_setMultiplayerOpen(open: boolean)
 	self._multiplayerModes.Visible = open
 	self._privateSetup.Visible = false
 	if self._tab == "play" then
-		self._action.Visible = open
+		self._action.Visible = open or self._freeSelected == true
 	end
 end
 
@@ -925,7 +926,7 @@ function HubUI:_showTab(id: string, instant: boolean)
 	local previous = self._pages[self._tab]
 	self._tab = id
 	if self._action then
-		self._action.Visible = id ~= "play" or (self._multiplayerOpen and not self._privateSetupOpen)
+		self._action.Visible = id ~= "play" or ((self._multiplayerOpen or self._freeSelected == true) and not self._privateSetupOpen)
 	end
 	for tabId, tab in self._tabs do
 		local active = tabId == id
@@ -970,6 +971,10 @@ end
 
 -- state: { selected, locked (only the leader picks), note?, availability = { [id] = { ok, reason } } }
 function HubUI:SetModes(state)
+	self._freeSelected = state.selected == "free"
+	if self._tab == "play" then
+		self._action.Visible = (self._multiplayerOpen or self._freeSelected) and not self._privateSetupOpen
+	end
 	self._selectedMode = state.selected
 	local selectedInfo = nil
 	for _, mode in self._lobbyConfig.Modes do
@@ -979,6 +984,7 @@ function HubUI:SetModes(state)
 		if selected then
 			selectedInfo = mode
 		end
+		if not card then continue end
 		TweenService:Create(card.bar, SLIDE, { Size = UDim2.new(0, if selected then 8 else 4, 1, 0) }):Play()
 		TweenService:Create(card.outline, QUICK, {
 			Color = if selected then mode.accent else MUTED,

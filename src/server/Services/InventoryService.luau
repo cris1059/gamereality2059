@@ -8,9 +8,11 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local root = ReplicatedStorage:WaitForChild("CyberpunkOnline")
 local InventoryConfig = require(root.Config.InventoryConfig)
+local DevConfig = require(root.Config.DevConfig)
 local RemoteNames = require(root.Network.RemoteNames)
 local RateLimiter = require(script.Parent.RateLimiter)
 
@@ -72,6 +74,21 @@ function InventoryService.Apply(inventory: Inventory, action: any, itemId: any, 
 	return false, "INVALID_ACTION"
 end
 
+-- Pure rule for the Studio dev grant: adds every catalog item the inventory
+-- does not hold yet (items already held keep their quantity). Returns
+-- whether anything was added.
+function InventoryService.GrantMissing(inventory: Inventory, catalog: { [string]: any }?): boolean
+	local quantities = InventoryConfig.DevGrantQuantity
+	local changed = false
+	for itemId, item in catalog or InventoryConfig.Items do
+		if (inventory.items[itemId] or 0) <= 0 then
+			inventory.items[itemId] = quantities[item.category] or quantities.default
+			changed = true
+		end
+	end
+	return changed
+end
+
 local function copy(inventory: Inventory): Inventory
 	return { items = table.clone(inventory.items), equipped = table.clone(inventory.equipped) }
 end
@@ -89,6 +106,12 @@ function InventoryService:_inventory(player: Player): Inventory?
 	end
 	local inventory = { items = saved.items or {}, equipped = saved.equipped or {} }
 	self._inventories[player.UserId] = inventory
+	if RunService:IsStudio() and DevConfig.GrantAllItems and InventoryService.GrantMissing(inventory) then
+		local ok, problem = self._data:SaveInventory(player.UserId, inventory.items, inventory.equipped)
+		if not ok then
+			warn("[REALITY 2059] Inventario de prueba no guardado: " .. tostring(problem))
+		end
+	end
 	return inventory
 end
 

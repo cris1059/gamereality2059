@@ -24,8 +24,29 @@ local MatchConfig = {
 		B = table.freeze({ name = "EQUIPO MAGENTA", color = Color3.fromRGB(255, 60, 170), brick = BrickColor.new("Hot pink") }),
 	}),
 	-- Weapons every player starts with (Tool names in ServerStorage.Weapons);
-	-- empty = a rifle and a pistol picked automatically.
-	StartingWeapons = table.freeze({}),
+	-- empty = a rifle and a pistol picked automatically. These two are built
+	-- from code by Weapons/WeaponModels.
+	StartingWeapons = table.freeze({ "R2059 Rifle VK-7", "R2059 Pistola Pm-8" }),
+	-- MODO ENTRENAMIENTO (TrainingService): one shared practice copy of this
+	-- map per server, with every weapon on pedestals and practice dummies.
+	-- Slot -1 sits between the map workshop and the match slots (0, 1, ...).
+	Training = table.freeze({
+		Map = "DistritoNexus",
+		Slot = -1,
+		Team = "A",
+		-- Practice zones beside the spawns (offset from the map's floor centre,
+		-- studs): standing in one takes perSecond health (negative heals).
+		Zones = table.freeze({
+			table.freeze({
+				name = "ZonaDano", label = "ZONA DE DAÑO", detail = "-20 VIDA / SEG  ·  PRUEBA CRÍTICO",
+				offset = Vector3.new(-84, 0, 150), size = 14, perSecond = 20, color = Color3.fromRGB(255, 54, 94),
+			}),
+			table.freeze({
+				name = "EstacionMedica", label = "ESTACIÓN MÉDICA", detail = "+25 VIDA / SEG",
+				offset = Vector3.new(84, 0, 150), size = 14, perSecond = -25, color = Color3.fromRGB(60, 255, 150),
+			}),
+		}),
+	}),
 }
 
 return table.freeze(MatchConfig)

@@ -26,4 +26,6 @@ return table.freeze({
 	WeaponShots = "WeaponShots",
 	MatchState = "MatchState",
 	MatchLeave = "MatchLeave",
+	TrainingStart = "TrainingStart",
+	TrainingLeave = "TrainingLeave",
 })

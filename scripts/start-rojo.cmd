@@ -1,4 +1,6 @@
 @echo off
+rem Run from the project root regardless of where this script is launched.
+cd /d "%~dp0.."
 set "ROJO_EXE=tools\rojo\rojo.exe"
 if exist "%ROJO_EXE%" goto serve
 where rojo >nul 2>nul

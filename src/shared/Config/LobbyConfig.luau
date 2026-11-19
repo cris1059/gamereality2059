@@ -173,6 +173,14 @@ local LobbyConfig = {
 	}),
 	-- The selected mode tints the haze and the menu accent.
 	Modes = table.freeze({
+		table.freeze({
+			id = "free", name = "MODO LIBRE", locked = false,
+			description = "Explora NEO-EDEN a tu ritmo, solo o con tu escuadrón.",
+			detail = "Recorre la ciudad y prueba tu personaje. Regresa al lobby desde MENÚ.",
+			rules = "EXPLORACIÓN  ·  HASTA 5 JUGADORES  ·  SIN EMPAREJAMIENTO",
+			accent = Color3.fromRGB(170, 90, 255),
+			haze = Color3.fromRGB(120, 60, 170), decay = Color3.fromRGB(40, 20, 70),
+		}),
 		-- The JUGAR page opens a MULTIJUGADOR gateway before showing these
 		-- queues. Modes without a complete server flow stay visible but locked.
 		table.freeze({
@@ -210,7 +218,7 @@ local LobbyConfig = {
 		table.freeze({
 			id = "training",
 			name = "MODO ENTRENAMIENTO",
-			locked = true,
+			locked = false,
 			description = "Practica movimiento, puntería y armas contra objetivos.",
 			detail = "Entra a una zona de práctica para probar armas, movilidad y sensibilidad sin buscar una partida.",
 			rules = "PRÁCTICA  ·  OBJETIVOS  ·  SIN CLASIFICACIÓN",

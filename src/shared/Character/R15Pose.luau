@@ -35,7 +35,7 @@ local KNEE_BEND = 48
 local ARM_SWING = 28
 
 export type R15Pose = typeof(setmetatable({} :: {
-	_joints: { [string]: Motor6D },
+	_joints: { [string]: Motor6D | AnimationConstraint },
 	_time: number,
 	_phase: number,
 	_speed: number,
@@ -50,7 +50,7 @@ function R15Pose.new(model: Model): R15Pose?
 	for jointName, partName in JOINT_PARTS do
 		local part = model:FindFirstChild(partName)
 		local motor = part and part:FindFirstChild(jointName)
-		if motor and motor:IsA("Motor6D") then
+		if motor and (motor:IsA("Motor6D") or motor:IsA("AnimationConstraint")) then
 			joints[jointName] = motor
 		end
 	end

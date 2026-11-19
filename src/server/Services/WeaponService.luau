@@ -2,7 +2,7 @@
 
 -- Carried weapons. Each player holds up to WeaponConfig.MaxSlots weapons
 -- (Tools cloned from ServerStorage.Weapons); the server owns the loadout.
--- Pickups are weapon models on the map with a ProximityPrompt (E): with a free
+-- Pickups are weapon models on the map with a ProximityPrompt (F): with a free
 -- slot the weapon is added; with a full loadout it replaces the weapon in
 -- hand, which drops where the player stands. The client switches with 1/2
 -- (WeaponEquip) and is told its loadout (WeaponLoadout).
@@ -21,6 +21,7 @@ local WeaponConfig = require(root.Config.WeaponConfig)
 local DevConfig = require(root.Config.DevConfig)
 local RemoteNames = require(root.Network.RemoteNames)
 local WeaponStats = require(root.Combat.WeaponStats)
+local WeaponModels = require(script.Parent.Parent.Weapons.WeaponModels)
 
 local WeaponService = {}
 WeaponService.__index = WeaponService
@@ -175,6 +176,11 @@ function WeaponService:_giveTools(player: Player)
 			tool:SetAttribute("WeaponClass", WeaponStats.ClassOf(tool))
 			tool:SetAttribute("Magazine", stats.magazine)
 			tool:SetAttribute("Ammo", stats.magazine)
+			-- When it was taken out (server clock): CombatService refuses shots
+			-- and reloads until its draw time has passed.
+			tool.Equipped:Connect(function()
+				tool:SetAttribute("EquippedAt", Workspace:GetServerTimeNow())
+			end)
 			tool.Parent = backpack
 			if index == loadout.equipped then
 				equippedTool = tool
@@ -352,8 +358,11 @@ function WeaponService:_buildArmory(map: Model)
 end
 
 function WeaponService:Start()
+	-- The game's own models (VK-7 rifle, Pm-8 pistol), rebuilt from code.
+	local built = WeaponModels.Install()
+	print("[REALITY 2059] Armas propias listas: " .. table.concat(built, ", "))
 	-- Shared on the character so every client poses it (ShooterAnimation).
-	self._aim.OnServerEvent:Connect(function(player: Player, pitch: any, aiming: any, reloading: any, crouching: any, sliding: any)
+	self._aim.OnServerEvent:Connect(function(player: Player, pitch: any, aiming: any, reloading: any, crouching: any, sliding: any, lean: any)
 		local character = player.Character
 		if not character or type(pitch) ~= "number" or pitch ~= pitch then
 			return
@@ -363,6 +372,9 @@ function WeaponService:Start()
 		character:SetAttribute("Reloading", reloading == true)
 		character:SetAttribute("Crouching", crouching == true)
 		character:SetAttribute("Sliding", sliding == true)
+		-- -1 (left) .. 1 (right); CombatService rolls the hitboxes with it.
+		local leanValue = if type(lean) == "number" and lean == lean then math.clamp(lean, -1, 1) else 0
+		character:SetAttribute("Lean", math.floor(leanValue * 20 + 0.5) / 20)
 	end)
 	self._equip.OnServerEvent:Connect(function(player: Player, slot: any)
 		local loadout = self._loadouts[player]

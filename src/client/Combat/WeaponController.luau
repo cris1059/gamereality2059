@@ -1,7 +1,7 @@
 --!strict
 
--- Client side of the carried weapons (WeaponService): the two-slot panel
--- (bottom right), 1 / 2 or the mouse wheel to switch, and the pickup prompts'
+-- Client side of the carried weapons (WeaponService): the two loadout slots
+-- (shown by the HUD's weapon module), 1 / 2 or the mouse wheel to switch, and the pickup prompts'
 -- text (AGARRAR with a free slot, INTERCAMBIAR when full). Roblox's own
 -- backpack bar is hidden while it is enabled.
 
@@ -13,73 +13,25 @@ local StarterGui = game:GetService("StarterGui")
 local root = ReplicatedStorage:WaitForChild("CyberpunkOnline")
 local RemoteNames = require(root.Network.RemoteNames)
 local WeaponConfig = require(root.Config.WeaponConfig)
+local CombatHUD = require(script.Parent.Parent.HUD.CombatHUD)
 
 local WeaponController = {}
 WeaponController.__index = WeaponController
 
 local SLOT_ACTION = "Reality2059WeaponSlot"
 local WHEEL_ACTION = "Reality2059WeaponWheel"
-local TEXT = Color3.fromRGB(236, 240, 255)
-local MUTED = Color3.fromRGB(130, 140, 165)
-local ACCENT = Color3.fromRGB(0, 220, 255)
 
 function WeaponController.new(playerGui: PlayerGui)
+	-- The slots are drawn by the HUD's weapon module (HUD/CombatHUD); this
+	-- ScreenGui is kept empty so Enable / Disable stay as they were.
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "WeaponSlots"
 	screen.ResetOnSpawn = false
-	screen.DisplayOrder = 81
 	screen.Enabled = false
 	screen.Parent = playerGui
-	local holder = Instance.new("Frame")
-	holder.AnchorPoint = Vector2.new(1, 1)
-	holder.Position = UDim2.new(1, -24, 1, -24)
-	holder.Size = UDim2.fromOffset(240, WeaponConfig.MaxSlots * 46)
-	holder.BackgroundTransparency = 1
-	holder.Parent = screen
-	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 6)
-	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	layout.Parent = holder
-	local slots = {}
-	for index = 1, WeaponConfig.MaxSlots do
-		local slot = Instance.new("Frame")
-		slot.LayoutOrder = index
-		slot.Size = UDim2.new(1, 0, 0, 40)
-		slot.BackgroundColor3 = Color3.fromRGB(10, 12, 22)
-		slot.BackgroundTransparency = 0.25
-		slot.BorderSizePixel = 0
-		slot.Parent = holder
-		local round = Instance.new("UICorner")
-		round.CornerRadius = UDim.new(0, 6)
-		round.Parent = slot
-		local outline = Instance.new("UIStroke")
-		outline.Color = ACCENT
-		outline.Transparency = 0.7
-		outline.Parent = slot
-		local key = Instance.new("TextLabel")
-		key.Size = UDim2.fromOffset(32, 40)
-		key.BackgroundTransparency = 1
-		key.Font = Enum.Font.SciFi
-		key.Text = tostring(index)
-		key.TextSize = 20
-		key.TextColor3 = ACCENT
-		key.Parent = slot
-		local name = Instance.new("TextLabel")
-		name.Position = UDim2.fromOffset(36, 0)
-		name.Size = UDim2.new(1, -44, 1, 0)
-		name.BackgroundTransparency = 1
-		name.Font = Enum.Font.SciFi
-		name.Text = "VACÍO"
-		name.TextSize = 15
-		name.TextColor3 = MUTED
-		name.TextXAlignment = Enum.TextXAlignment.Left
-		name.TextTruncate = Enum.TextTruncate.AtEnd
-		name.Parent = slot
-		slots[index] = { outline = outline, name = name }
-	end
 	local self = setmetatable({
 		_screen = screen,
-		_slots = slots,
+		_hud = CombatHUD.get(),
 		_enabled = false,
 		_loadout = { slots = {}, equipped = 1, max = WeaponConfig.MaxSlots },
 		_connections = {} :: { RBXScriptConnection },
@@ -102,13 +54,7 @@ end
 
 function WeaponController:_render()
 	local loadout = self._loadout
-	for index, slot in self._slots do
-		local name = loadout.slots[index]
-		local equipped = name ~= nil and index == loadout.equipped
-		slot.name.Text = name or "VACÍO"
-		slot.name.TextColor3 = if equipped then TEXT elseif name then MUTED else Color3.fromRGB(80, 86, 104)
-		slot.outline.Transparency = if equipped then 0 else 0.7
-	end
+	self._hud:SetSlots(loadout.slots, loadout.equipped, loadout.max or WeaponConfig.MaxSlots)
 end
 
 function WeaponController:_select(slot: number)
@@ -142,7 +88,7 @@ function WeaponController:Enable()
 		end
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.UserInputType.MouseWheel)
-	-- The prompt says what E will do for this player.
+	-- The prompt says what F will do for this player.
 	table.insert(self._connections, ProximityPromptService.PromptShown:Connect(function(prompt)
 		if prompt:GetAttribute("WeaponId") then
 			prompt.ActionText = if #self._loadout.slots >= (self._loadout.max or WeaponConfig.MaxSlots) then "INTERCAMBIAR" else "AGARRAR"

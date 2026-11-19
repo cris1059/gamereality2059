@@ -1,0 +1,3 @@
+﻿Origen: https://github.com/gamedev-skills/awesome-gamedev-agent-skills (Apache-2.0)
+Commit: c6ca6c41c839b68319ffc08430b99ab768debc32 (2026-11-12)
+Instaladas: roblox-networking, roblox-datastores, roblox-studio-workflow, roblox-luau, roblox-ui, roblox-characters, fps-shooter, performance-optimization, camera-systems

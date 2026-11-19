@@ -333,6 +333,9 @@ function LobbyController:_refreshAction()
 	elseif self._mode == "free" then
 		view.label = "JUGAR"
 		view.sublabel = if count > 1 then "ENTRAR A LA CIUDAD CON TU ESCUADRÓN" else "ENTRAR A LA CIUDAD"
+	elseif self._mode == "training" then
+		view.label = "ENTRENAR"
+		view.sublabel = if count > 1 then "ZONA DE PRÁCTICA CON TU ESCUADRÓN" else "ENTRAR A LA ZONA DE PRÁCTICA"
 	elseif self._mode == "private" then
 		view.label = "INICIAR PARTIDA"
 		view.sublabel = if type(privateCode) == "string" then "COMPARTE EL CÓDIGO  " .. privateCode else string.format("SALA PRIVADA  ·  %d/10 JUGADORES", count)

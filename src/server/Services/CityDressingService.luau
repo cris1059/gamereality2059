@@ -369,6 +369,7 @@ function CityDressingService.Build(world: Model): number
 				descendant:SetAttribute("Dropped", true)
 			end
 			descendant.Material = style.material
+			descendant:SetAttribute("CityMaterialSource", "PLAIN_STYLE")
 			descendant.Color = style.color
 		elseif textureSet and CityTextureConfig.PlayTint[textureSet] then
 			local tint = CityTextureConfig.PlayTint[textureSet]

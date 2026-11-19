@@ -24,8 +24,10 @@ local ShopService = require(script.Services.ShopService)
 local WeaponService = require(script.Services.WeaponService)
 local CombatService = require(script.Services.CombatService)
 local MatchService = require(script.Match.MatchService)
+local TrainingService = require(script.Match.TrainingService)
 local PartyService = require(script.Party.PartyService)
 local AccessService = require(script.Services.AccessService)
+local WaistSealService = require(script.Services.WaistSealService)
 
 -- Runtime-only instances belong to the server and are intentionally not mapped
 -- by Rojo, so Studio-authored visual content remains untouched.
@@ -37,7 +39,7 @@ if not runtime then
 end
 
 AccessService.Start()
-runtime:SetAttribute("ServerReady", true)
+runtime:SetAttribute("ServerReady", false)
 runtime:SetAttribute("ProjectVersion", gameConfig.RojoProjectVersion)
 runtime:SetAttribute("PersistenceBackend", gameConfig.Persistence.Backend)
 
@@ -74,6 +76,7 @@ if RunService:IsStudio() then
 	runStudioTests("Inventory", script.Tests.InventoryTests :: ModuleScript)
 	runStudioTests("Party", script.Tests.PartyTests :: ModuleScript)
 	runStudioTests("City life", script.Tests.CityLifeTests :: ModuleScript)
+	runStudioTests("Combat validation", script.Tests.CombatValidationTests :: ModuleScript)
 end
 
 -- "Auto": real DataStores when they answer. Only in Studio without API
@@ -114,6 +117,9 @@ bootstrapService:Start()
 -- Standard R15 avatars: preview models for the client and real characters.
 local avatarService = AvatarService.new(runtime)
 avatarService:Start()
+-- Layered clothing hides the body under it: line every character's waist
+-- so no pose shows the scene through a gap between shirt and trousers.
+WaistSealService.new():Start()
 local freeRoamService = FreeRoamService.new(runtime, freeRoamWorld, avatarService)
 freeRoamService:Start()
 local inventoryService = InventoryService.new(runtime, dataService)
@@ -128,9 +134,13 @@ combatService:Start()
 -- weapon loadouts.
 local matchService = MatchService.new(runtime, freeRoamService, weaponService)
 matchService:Run()
+-- MODO ENTRENAMIENTO: a shared practice map with every weapon and dummies.
+local trainingService = TrainingService.new(runtime, freeRoamService, weaponService, combatService, matchService)
+trainingService:Run()
 local partyService = PartyService.new(runtime, dataService)
 partyService:SetMatchService(matchService)
 partyService:Start()
+runtime:SetAttribute("ServerReady", true)
 
 game:BindToClose(function()
 	bootstrapService:Shutdown()

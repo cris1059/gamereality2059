@@ -279,7 +279,10 @@ function AvatarPreview:_mount(template: Model, key: string)
 	self:_paint()
 	self:_ground(stand)
 	self._connection = RunService.RenderStepped:Connect(function(deltaTime)
+		-- Label for the MicroProfiler (Ctrl+F6): pedestrians and previews.
+		debug.profilebegin("R2059 Avatar")
 		self:_step(deltaTime)
+		debug.profileend()
 	end)
 end
 
